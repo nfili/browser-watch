@@ -1,0 +1,82 @@
+.\" Manpage for browser-watch.
+.\" Contact nicolasfilippozzi@gmail.com in to correct errors or typos.
+'\" t
+.\"     Title: \fBkate\fR
+.\"    Author: Nicolas Filippozzi <nicolasfilippozzi@gmail.com>
+.\"      Date: 27-08-2024
+.\"    Manual: Manuel de l'utilisateur de browser-watch
+.\"    Source: GNU
+.\"  Language: French
+.\"
+.TH "\FBBROWSER-WATCH\FR" "1" "27 Août 2024" "GNU" "Manuel de l'utilisateur de browser-watch"
+.SH NAME
+browser-watch \- Cr\('eation et envoie d'un rapport mail
+.SH SYNOPSIS
+.HP \w'\fBbrowser-watch\fR\ u'
+\fBbrowser-watch\fR [\fB\-u, \-\-user\fR\fI utilisateur\fR] [\fB\-m, \-\-mailto\fR\fI responsable1,reponsabe2,...\fR]
+.RE
+\fBbrowser-watch\fR [\fB\-v, \-\-version\fR]
+.RE
+\fBbrowser-watch\fR [\fB\-h, \-\-help\fR]
+.SH DESCRIPTION
+.PP
+browser-watch permait de cr\('eer un compte rendu de l'historique des navigateurs pour l'utilisateur sélectionn\('e et de transmettre ce rapport par email aux responsables légaux choisis\&.
+.PP
+Les rapports sont envoy\('es \(`a 00:00 tous les jours, et \(`a chaque extinction de l'ordinateur\&.
+.SH OPTIONS
+.PP
+\fB\-h\fR, \fB\-\-help\fR
+.RS 4
+Affiche l'aide de browser-watch\&.
+.RE
+.PP
+\fB\-v\fR, \fB\-\-version\fR
+.RS 4
+Affiche la version de browser-watch\&.
+.RE
+.PP
+\fB\-u\fR, \fB\-\-user\fR \fIutilisateur\fR
+.RS 4
+Utilsateur \(`a surveill\('e\&.
+.RE
+.PP
+\fB\-m\fR, \fB\-\-mailto\fR \fIemail\fR
+.RS 4
+L'adresse email du ou des responsable(s) l\('egaux s\('epar\('e par une virgule\&.
+.RE
+.SH NAVIGATEUR SUPPORT\('E
+.RE
+GOOGLE
+.RE
+CHROMIUM
+.RE
+FIREFOX
+.RE
+KONQUEROR           Support\('e mais n'est pas sécuris\('e\&.
+.RE
+.SH "VOIR \('EGALEMENT"
+.BR mailx (1)
+.RE
+.SH NOTES
+.RE
+Si vous souhaitez que l'on rajoute un navigateur au script, merci de m'envoyer un mail en indiquant:
+.RS 4
+\-Ajout d'un navigateur dans le sujet\&.
+.RE
+.RS 4
+\-son nom dans le corp du message\&.
+.RE
+.RS 4
+\(`a
+.MT nicolasfilippozzi@\:gmail.com Nicolas Filippozzi
+.ME
+.RE
+.SH BUGS
+Ne pas utiliser la commande dpkg\-reconfigure, elle plante l'installation est d\('esactive les services d\('emarr\('es\&.
+.RE
+La correction du probl\(`eme sera faite prochainement\&.
+.RE
+.SH "AUTEUR"
+.PP
+\fBNicolas Filippozzi\fR <\&nicolasfilippozzi\&.gmail.com\&>
+.RS 4

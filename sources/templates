@@ -1,0 +1,36 @@
+Template: browser-watch/title_user
+Type: title
+Description: Utilisateur
+
+Template: browser-watch/user
+Type: select
+Choices: ${choices}
+Description: Utilisateur surveiller
+ Il s'agit du nom de l'utilisateur qui sera surveillé.
+
+Template: browser-watch/title_mail
+Type: title
+Description: Email
+
+Template: browser-watch/email
+Type: string
+Description: Adresse email du responsable
+ ${extends}
+ .
+ Il s'agit de l'adress email du responsable de l'utilisateur
+ qui recevra le rapport.
+ .
+ Il peut y avoir plusieur email.
+ ex: email@responsable1.com,email@responsable2.com .
+
+Template: browser-watch/title_finish
+Type: title
+Description: Fin de la configuration
+
+Template: browser-watch/finish
+Type: note
+Description: La configuration est finie.
+ Si vous pensez vous être trompé, ou simplement vérifier
+ .
+ les informations saisies, vous pouvez taper sur la
+ touche "echap" pour revenir en arrière

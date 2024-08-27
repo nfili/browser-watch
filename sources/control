@@ -1,0 +1,13 @@
+Package: browser-watch
+Version: 1.0
+Maintainer: Nicolas Filippozzi <nicolasfilippozzi@gmail.com>
+Architecture: all
+Depends: sqlite3,mailx
+Recommends: Exim4
+Description: Envoi par email un rapport sur l'historique de navigation
+ browser-watch permet d'envoyer un rapport sur l'historique de
+ navagation des navigateurs instalés
+ par e-mail.
+ .
+Priority: optional
+Section: utils

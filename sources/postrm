@@ -1,0 +1,27 @@
+#!/bin/sh
+
+set -e
+
+# Source debconf library.
+. /usr/share/debconf/confmodule
+db_purge
+
+#suppression des liens symboliques)
+if [ -e /etc/cron.d/browser-watch ]; then
+    rm /etc/cron.d/browser-watch
+fi
+if [ -h etc/systemd/system/browser-watch.service ];then
+    \rm /etc/systemd/system/browser-watch.service
+    \rm /etc/systemd/system/multi-user.target.wants/browser-watch.service
+    \rm -R /etc/systemd/system/browser-watch.service.d
+fi
+if [ -h /usr/bin/browser-watch ]; then
+    \rm -f /usr/bin/browser-watch
+fi
+if [ -e /usr/lib/systemd/system/browser-watch.service ]; then
+    \rm /usr/lib/systemd/system/browser-watch.service
+fi
+if [ -d /usr/lib/browser-watch ];then
+    \rm -R /usr/lib/browser-watch
+fi
+

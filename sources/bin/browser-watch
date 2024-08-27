@@ -1,0 +1,569 @@
+#!/bin/bash
+
+#############
+# Variables #
+#############
+
+# Version du script
+VERSION=1.0
+# Création des fichiers temporaires
+MESSAGE="$(mktemp)"
+# Date du jours pour récuperer les historiques de la journée
+DATE=`date +"%Y-%m-%d"`
+# Gestion des navigateur
+NAVIGATOR_LIST=( "google-chrome-stable" "chromium" "firefox" "konqueror" )
+NAVIGATOR=( )
+# Gestion des moteurs de recherches
+GOOGLE=( )
+DUCKDUCKGO=( )
+BING=( )
+QWANT=( )
+QWANTJUNIOR=( )
+YAHOO=( )
+# Gestion des sites visité
+HIST=( )
+# Variable pour la convertion
+READABLE=""
+
+# Fonction pour réinitialiser les variables
+reset(){
+    GOOGLE=( )
+    DUCKDUCKGO=( )
+    BING=( )
+    QWANT=( )
+    QWANTJUNIOR=( )
+    YAHOO=( )
+    HIST=( )
+}
+
+#############################
+# Fonction pour le terminal #
+#############################
+
+# Fonction pour afficher l'utilisation du script
+use(){
+    printf "usage: $0 [-u USER] [-m \"responsable@legal.com,reponsable@legal2.com\"]"
+}
+# Fonction pour afficher l'aide du script
+help_msg(){
+    printf """
+$(use)
+
+Description:
+    Scrip permantant de créér un compte rendu de l'historique des navigateurs pour l'utilisateur
+    sélectionné et de transmettre ce rapport par email aux responsables légaux choisis.
+
+    1. Ce script fait parti du protocole de surveillance de la consommation d'internet par les mineurs.
+    2. La loi française et trés strict quand à l'exposition des mineurs aux contenus web.
+    3. L'utilisation de ce script est réservé aux responsables légaux du mineur sous surveillance.
+
+Paramètres informatif
+    -h, --help          Affiche ce message et quitte
+    -V, --version       Version du script
+
+Paramètres
+    -u, --user          Utilisateur à surveiller
+    -m, --mailto        Destinataire(s) du compte rendu
+
+Navigateur supporté
+    GOOGLE
+    CHROMIUM
+    FIREFOX
+    KONQUEROR           Supporté mais n'est pas sécurisé
+
+"""
+}
+# Afficher la version du script
+version(){
+    printf """
+$0 2024
+Version : $VERSION
+
+"""
+}
+
+
+########################
+# Structure de l'email #
+########################
+
+# Footer
+description_html(){
+    echo """
+    Ce script fait parti du protocole de surveillance de la consommation d'internet par les mineurs.<br>
+    La loi française et trés strict quand à l'exposition des mineurs aux contenus web.<br>
+    L'utilisation de ce script est réservé aux responsables légaux du mineur sous surveillance.
+"""
+}
+# Converti les variables de lien url en charactère lisible (Français uniquement)
+readable(){
+    READABLE="${1//+/ }"
+    READABLE="${READABLE//%C3%A2/â}"
+    READABLE="${READABLE//%C3%A0/à}"
+    READABLE="${READABLE//%C3%A1/ä}"
+    READABLE="${READABLE//%C3%A9/é}"
+    READABLE="${READABLE//%C3%A8/è}"
+    READABLE="${READABLE//%C3%AB/ë}"
+    READABLE="${READABLE//%C3%AA/ê}"
+    READABLE="${READABLE//%C3%AA/ê}"
+    READABLE="${READABLE//%C3%AE/î}"
+    READABLE="${READABLE//%C3%AF/ï}"
+    READABLE="${READABLE//%C3%B4/ô}"
+    READABLE="${READABLE//%C5%93/œ}"
+    READABLE="${READABLE//%C3%B9/ù}"
+    READABLE="${READABLE//%C3%BB/û}"
+    READABLE="${READABLE//%C3%BC/ü}"
+    READABLE="${READABLE//%C3%BF/ÿ}"
+    READABLE="${READABLE//%C3%A7/ç}"
+    READABLE="${READABLE//%3A/:}"
+    READABLE="${READABLE//%2B/+}"
+    READABLE="${READABLE//%2F/\/}"
+    READABLE="${READABLE//%20/-}"
+    READABLE="${READABLE//%25/%}"
+    READABLE="${READABLE//%27/\'}"
+}
+# Mise en page du rapport pour chaque moteur de recherche
+rappot_moteur(){
+    declare -n MOT=${1}
+    if [[ ${#MOT[@]} -ne 0 ]];then
+        echo "<li>Moteur de recherche <b>$2</b>: ${#MOT[@]} => <label for=\"s${3:0:1}$2\" style=\"cursor : pointer;color: blue;\">Voir</label></li>" >> $MESSAGE
+        echo """
+        <input type=\"checkbox\" id=\"s${3:0:1}$2\">
+        <table cellspacing=\"0\" border class=\"result_moteur\" id=\"h${3:0:1}$2\">
+        """ >> $MESSAGE
+        for recherche in ${MOT[@]};do
+            readable $recherche
+            echo "<tr><td>$READABLE</td></tr>" >> $MESSAGE
+        done
+        echo "</table>" >> $MESSAGE
+        unset $MOT
+    fi
+}
+# Mise en page du rapport pour chaque naigateur
+navigateur(){
+        iconv -f us-ascii -t utf-8 -c "$TMP_CSV_FILE" > "$TMP_ICONV_FILE"
+        while read -r line
+        do
+                date=$(echo $line | awk '{print $1}')
+                if [[ "$date" == "$DATE" ]];then
+                        line1=${line:20}
+                        if [[ "$line1" =~ google.(fr|com)/search ]];then
+                                SEARCH="$(echo "$line1" | grep -o -E "q=([a-zA-Z0-9+'%-]+)+" | tr "\n" " " | awk '{print $1}')"
+                                GOOGLE+=( "${SEARCH:2}" )
+                        elif [[ "$line1" =~ duckduckgo.com/\?(t=h_&q=|q=) ]];then
+                                SEARCH="$(echo "$line1" | grep -o -E "q=([a-zA-Z0-9+'%-]+)+&")"
+                                DUCKDUCKGO+=( "${SEARCH:2:$(("${#SEARCH}"-3))}" )
+                        elif [[ "$line1" =~ qwant.com/\? ]];then
+                                SEARCH="$(echo "$line1" | grep -o -E "q=([a-zA-Z0-9+'%-]+)+&")"
+                                QWANT+=( "${SEARCH:2:$(("${#SEARCH}"-3))}" )
+                        elif [[ "$line1" =~ qwantjunior.com/\? ]];then
+                                SEARCH="$(echo "$line1" | grep -o -E "q=([a-zA-Z0-9+'%-]+)+&")"
+                                QWANTJUNIOR+=( "${SEARCH:2:$(("${#SEARCH}"-3))}" )
+                        elif [[ "$line1" =~ bing.com/search ]];then
+                                SEARCH="$(echo "$line1" | grep -o -E "q=([a-zA-Z0-9+'%-]+)+&for")"
+                                BING+=( "${SEARCH:2:$(("${#SEARCH}"-6))}" )
+                        elif [[ "$line1" =~ search.yahoo.com ]];then
+                                SEARCH="$(echo "$line1" | grep -o -E "p=([a-zA-Z0-9+'%-]+)+&")"
+                                YAHOO+=( "${SEARCH:2:$(("${#SEARCH}"-3))}" )
+                        else
+                                HIST+=( "${line1}" )
+                        fi
+                        unset $SEARCH
+                fi
+        done < "$TMP_ICONV_FILE"
+        if [[ -z $GOOGLE && -z $DUCKDUCKGO && -z $QWANT && -z $QWANTJUNIOR && -z $BING && -z $YAHOO && -z $HIST ]];then
+            reset
+            rm $TMP_CSV_FILE $TMP_ICONV_FILE
+            return
+        fi
+        ###############
+        # Mise en page#
+         echo """
+        <div id=\"navigateur\">
+			<h3>Navigateur $nav</h3>
+			<ul>
+        """ >> $MESSAGE
+        # Affichage des rapport sur les moteurs de recherche
+        #google
+        rappot_moteur GOOGLE "google" "$1"
+        #duckduckgo
+        rappot_moteur DUCKDUCKGO "duckduckgo" "$1"
+        #qwant
+        rappot_moteur QWANT "qwant" "$1"
+        #qwantjunior
+        rappot_moteur QWANTJUNIOR "qwantjunior" "$1"
+        #bing
+        rappot_moteur BING "bing" "$1"
+        #yahoo
+        rappot_moteur YAHOO "yahoo" "$1"
+        # liste des sites visités
+        rappot_moteur HIST "sites" "$1"
+         echo """
+			</ul>
+         </div>
+        """ >> $MESSAGE
+
+        # remise à zéro des variables de surveillance
+        reset
+        rm $TMP_CSV_FILE $TMP_ICONV_FILE
+}
+
+#
+surveillance(){
+    declare -n NAVI=${1}
+    # Création des fichiers temporaires
+    TMP_ICONV_FILE="$(mktemp)"
+    TMP_CSV_FILE="$(mktemp)"
+    # Variable temporaires
+    TEMP=""
+    for nav in ${NAVI[@]};do
+        case $nav in
+            chromium)
+                INPUT=/home/${USERS}/.config/chromium/Default/History
+                sqlite3 $INPUT "SELECT datetime(visits.visit_time/1000000-11644473600, 'unixepoch', 'localtime') as 'visit_time',urls.url from urls,visits WHERE urls.id = visits.url and urls.last_visit_time=visits.visit_time AND datetime(visits.visit_time/1000000-11644473600, 'unixepoch') LIKE '${DATE}%'" > "$TMP_CSV_FILE"
+                navigateur "$nav"
+                ;;
+            google-chrome-stable)
+                INPUT=/home/${USERS}/.config/google-chrome/Default/History
+                sqlite3 $INPUT "SELECT datetime(visits.visit_time/1000000-11644473600, 'unixepoch', 'localtime') as 'visit_time',urls.url from urls,visits WHERE urls.id = visits.url and urls.last_visit_time=visits.visit_time AND datetime(visits.visit_time/1000000-11644473600, 'unixepoch') LIKE '${DATE}%'" > "$TMP_CSV_FILE"
+                navigateur "$nav"
+                ;;
+            firefox)
+                INPUT=/home/${USERS}/.mozilla/firefox/*.default-release/places.sqlite
+                sqlite3 $INPUT "SELECT datetime(moz_historyvisits.visit_date/1000000,'unixepoch','localtime'), moz_places.url FROM moz_places, moz_historyvisits WHERE moz_places.id = moz_historyvisits.place_id and moz_historyvisits.visit_date = moz_places.last_visit_date and datetime(moz_historyvisits.visit_date/1000000,'unixepoch') like '${DATE}%'" > "$TMP_CSV_FILE"
+                navigateur "$nav"
+                ;;
+            konqueror)
+                echo "<p id=\"blink_text\" style=\"color: red; font-weight: bold;text-align: center;\"> le navigateur $nav n'est pas sécurisé, veuiller le désinstaller</p>" >> $MESSAGE
+                ;;
+            *)
+                echo "<p style=\"color: red; font-weight: bold\"> le navigateur $nav n'est pas géreé</p>" >> $MESSAGE
+                return
+                ;;
+        esac
+    done
+}
+#############
+# Arguments #
+#############
+# Si nombre de paramètres = 0 on affiche l'aide
+if [[ $# -eq O ]];then
+    help_msg
+    exit 0
+fi
+# Gestion des paramètres
+while [ $# -gt 0 ];do
+    key=$1
+    case $key in
+        -h|--help)
+            help_msg
+            exit 0;;
+        -V|--version)
+            version
+            exit 0;;
+        -u|--user)
+            exist=0
+            # Vérification de l'existance de l'utilisateur
+            while read -r lines; do
+                if [[ "$lines" =~ "$2" ]];then
+                    exist+=1
+                fi
+            done < /etc/passwd
+            if [ $exist -eq 0 ];then
+                    printf "L'utilisateur $USERS n'existe pas, abandon.\n"
+                    exit 2
+            else
+                USERS="$2"
+                shift
+                shift
+            fi
+            unset exist
+            ;;
+        -m|--mailto)
+            # Regex pour la vérification des adresse email
+            regex_mail="^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$"
+            MAIL=( `echo $2 | tr "," " " ` )
+            for mail in "${MAIL[@]}";do
+                if [[ ! $mail =~ $regex_mail ]];then
+                    printf "L'adresse email $mail n'est pas valide, abandon"
+                    exit 2
+                fi
+            done
+            TO="$2"
+            shift
+            shift;;
+        *)
+            echo "Argument non defini : $key"
+            exit 1;;
+    esac
+done
+# Vérification des dépendences
+if [[  "`which sqlite3`" == "" ]]; then
+      echo " La dépense sqlite3 n'est pas installée, abandon."
+      exit 1
+fi
+# Vérification de la présence de l'utilisateur
+if [ ! -n $USERS ];then
+    printf "Le paramètres -u est obligatoire"
+    use
+    exit 2
+fi
+# Vérification de la présence du navigateur
+for nav in ${NAVIGATOR_LIST[@]};do
+    if [[ ! "`which $nav`" == "" ]]; then
+        NAVIGATOR+=( "$nav" )
+    fi
+done
+# Vérification de la présence de navigateur web
+if [ ${#NAVIGATOR[@]} -eq 0 ];then
+    printf "Aucun navigateur de trouvée, pas de surveillance possible"
+    exit 0
+fi
+# Vérification de la presence des adresses emails
+if [ ! -n TO ];then
+    printf "Le paramètres -m est obligatoire"
+    use
+    exit 2
+fi
+####################
+# Création du mail #
+####################
+# Information pour le mail du rapport
+MIME="Content-Type: text/html; charset=UTF-8"
+SUBJECT="Historique des navigateurs pour ${USERS}"
+# Entéte de la page html + header
+    echo """
+<!doctype html>
+<html lang=\"fr\">
+    <head>
+        <meta charset=\"utf-8\" />
+        <meta name=\"viewport\" content=\"width=device-width\" />
+        <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />
+        <title>Historique de ${USERS}</title>
+        <style type=\"text/css\">
+            #hggoogle,#sggoogle{
+                display:none;
+            }
+            #sggoogle:checked + #hggoogle {
+                display: inherit;
+            }
+            #hgduckduckgo,#sgduckduckgo{
+                display:none;
+            }
+            #sgduckduckgo:checked + #hgduckduckgo {
+                display: inherit;
+            }
+            #hgqwant,#sgqwant{
+                display:none;
+            }
+            #sgqwant:checked + #hgqwant {
+                display: inherit;
+            }
+            #hgqwantjunior,#sgqwantjunior{
+                display:none;
+            }
+            #sgqwantjunior:checked + #hgqwantjunior {
+                display: inherit;
+            }
+            #hgbing,#sgbing{
+                display:none;
+            }
+            #sgbing:checked + #hgbing {
+                display: inherit;
+            }
+            #hgyahoo,#sgyahoo{
+                display:none;
+            }
+            #sgyahoo:checked + #hgyahoo {
+                display: inherit;
+            }
+            #hgsites,#sgsites{
+                display:none;
+            }
+            #sgsites:checked + #hgsites {
+                display: inherit;
+            }
+            #hcgoogle,#scgoogle{
+                display:none;
+            }
+            #scgoogle:checked + #hcgoogle {
+                display: inherit;
+            }
+            #hcduckduckgo,#scduckduckgo{
+                display:none;
+            }
+            #scduckduckgo:checked + #hcduckduckgo {
+                display: inherit;
+            }
+            #hcqwant,#scqwant{
+                display:none;
+            }
+            #scqwant:checked + #hcqwant {
+                display: inherit;
+            }
+            #hcqwantjunior,#scqwantjunior{
+                display:none;
+            }
+            #scqwantjunior:checked + #hcqwantjunior {
+                display: inherit;
+            }
+            #hcbing,#scbing{
+                display:none;
+            }
+            #scbing:checked + #hcbing {
+                display: inherit;
+            }
+            #hcyahoo,#scyahoo{
+                display:none;
+            }
+            #scyahoo:checked + #hcyahoo {
+                display: inherit;
+            }
+            #hcsites,#scsites{
+                display:none;
+            }
+            #scsites:checked + #hcsites {
+                display: inherit;
+            }
+            #hfgoogle,#sfgoogle{
+                display:none;
+            }
+            #sfgoogle:checked + #hfgoogle {
+                display: inherit;
+            }
+            #hfduckduckgo,#sfduckduckgo{
+                display:none;
+            }
+            #sfduckduckgo:checked + #hfduckduckgo {
+                display: inherit;
+            }
+            #hfqwant,#sfqwant{
+                display:none;
+            }
+            #sfqwant:checked + #hfqwant {
+                display: inherit;
+            }
+            #hfqwantjunior,#sfqwantjunior{
+                display:none;
+            }
+            #sfqwantjunior:checked + #hfqwantjunior {
+                display: inherit;
+            }
+            #hfbing,#sfbing{
+                display:none;
+            }
+            #sfbing:checked + #hfbing {
+                display: inherit;
+            }
+            #hfyahoo,#sfyahoo{
+                display:none;
+            }
+            #sfyahoo:checked + #hfyahoo {
+                display: inherit;
+            }
+            #hfsites,#sfsites{
+                display:none;
+            }
+            #sfsites:checked + #hfsites {
+                display: inherit;
+            }
+            body{
+                width: 600px;
+                margin: auto;
+                color: #031442;
+
+            }
+            header{
+                line-height: 0.5em;
+            }
+            header h5{
+                color: #608bf9;
+            }
+            section{
+                width: 100%;
+            }
+            section div{
+                width:99%;
+                background: #fbfcff;
+            }
+            section h3,li{
+                color: #031442;
+            }
+            .result_moteur{
+                width: 98%;
+                margin: auto;
+                border-width: 0px;
+                border-collapse: collapse;
+            }
+
+            td{
+                width:98%;
+                word-break: break-all;
+                border-width:0px;
+                border-color: #031442;
+            }
+            tr {
+                background: #608bf9;
+                border-left:1px solid #031442;
+                border-right:1px solid #031442;
+            }
+            tr:nth-child(odd){
+                background: #e5ecfe;
+                border-left:1px solid #031442;
+                border-right:1px solid #031442;
+            }
+            tr:first-child{
+                border-top: 1px solid #031442;
+            }
+            tr:last-child{
+                border-bottom: 1px solid #031442;
+            }
+            #blink_text{
+                text-alihn:center;
+                animation-name:blink;
+                animation-duration:2s;
+                animation-timing-function:ease-in;
+                animation-iteration-count:Infinite;
+            }
+            @keyframes blink{
+                0%{color:red;}
+                50%{color:white;}
+                100%{color:red;}
+            }
+            footer p{
+                color: red;
+                text-align: center;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <div style=\"text-align: center;\">
+                <h1>Historique du $DATE</h1>
+                <h5>Surveillance des navigateur web.</h5>
+            </div>
+        </header>
+        <section>
+""" > $MESSAGE
+# Création des rapports
+surveillance NAVIGATOR
+# Fin de la page html + header
+    echo """
+        </section>
+        <footer>
+            <p>
+                $(description_html)
+            </p>
+            <center>
+                2024 &#xa9; - Nicolas Filippozzi -
+                <a href=\"mailto:nicolasfilippozzi@gmail.com?subject=Bloquer ce site!&body=$USERS ne doit pas avoir acc&eacute; &agrave; ce site : indiquer le site i&ccedil;i\">Bloquer un site</a>
+            </center>
+        </footer>
+    </body>
+</html>
+""" >> $MESSAGE
+# Enoie du mail
+cat "$MESSAGE" | mailx -s "$SUBJECT" -a "$MIME" "$TO"
+# Suppression des variables
+rm  $MESSAGE
+exit 0

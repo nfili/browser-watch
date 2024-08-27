@@ -1,0 +1,80 @@
+#!/bin/sh -e
+
+set -e
+# Source debconf library.
+. /usr/share/debconf/confmodule
+
+CONF="$1"
+db_version 2.0
+
+db_capb backup
+# Use a state machine to allow jumping back to previous questions.
+STATE=1
+#Error mail
+ERROR=0
+while [ "$STATE" != 0 -a "$STATE" != 4 ]; do
+    case "$STATE" in
+        1)
+            db_beginblock
+            #Choisir l'utilisateur
+            choices=""
+            for rep in $(ls /home);do
+                if [ -d "/home/$rep" -a ! "$rep" = "lost+found" ];then
+                    if [ ${#choices} -eq 0 ];then
+                        choices="$rep"
+                    else
+                        choices="$choices, $rep"
+                    fi
+                fi
+            done
+            db_settitle browser-watch/title_user
+            db_subst browser-watch/user choices ${choices}
+            #if [ "$CONF" = "configure" ];then
+            #    db_reset browser-watch/user
+            #fi
+            #db_fset browser-watch/user seen false
+            db_input critical browser-watch/user || true
+            db_endblock
+            ;;
+        2)
+            db_beginblock
+            #Choisir l'email
+            db_settitle browser-watch/title_mail
+            #db_subst browser-watch/email extends "Email invalide, modifier "
+            #db_fset browser-watch/email seen false
+            #if [ "$CONF" = "configure" ];then
+            #    db_reset browser-watch/email
+            #fi
+            if [ $ERROR -ne 0 ];then
+                db_subst browser-watch/email extends "Email invalide, modifier "
+            else
+                db_subst browser-watch/email extends ""
+            fi
+            db_input critical browser-watch/email || true
+            db_endblock
+            ;;
+        3)
+            db_beginblock
+            #Fin de la configuration
+            db_settitle browser-watch/title_finish
+            #db_fset browser-watch/finish seen false
+            db_input critical browser-watch/finish || true
+            db_endblock
+            ;;
+    esac
+    if db_go; then
+        if [ $STATE -eq 2 ]; then
+            REGEX="^([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}[,]?)+$"
+            db_get browser-watch/email
+            if [ $(echo $RET | grep -o -E $REGEX) ];then
+                STATE=$(($STATE + 1))
+            else
+                ERROR=1
+            fi
+        else
+            STATE=$(($STATE + 1))
+        fi
+    else
+        STATE=$(($STATE - 1))
+    fi
+done

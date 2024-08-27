@@ -1,0 +1,10 @@
+#!/bin/sh
+
+set -e
+
+FIND=$( find /etc -name browser-watch.service )
+if [ ! "${#FIND}" = 0 ];then
+    echo $FIND
+    systemctl stop browser-watch.service
+    systemctl disable browser-watch.service
+fi

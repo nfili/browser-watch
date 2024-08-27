@@ -1,0 +1,88 @@
+#!/bin/sh
+
+set -e
+
+# Source debconf library.
+. /usr/share/debconf/confmodule
+
+db_version 2.0
+
+PKGNAME=browser-watch
+db_get browser-watch/user || true
+USER=$RET
+db_get browser-watch/email || true
+EMAIL=$RET
+#Fichier pour le binaire
+BIN=/usr/lib/browser-watch/bin/browser-watch
+#Fichier pour le cron
+PATH_CRON=/usr/lib/browser-watch/cron.d
+CRON=$PATH_CRON/browser-watch
+#Fichier pour le service
+PATH_SERVICE=/usr/lib/browser-watch/systemd/system
+SERVICE=$PATH_SERVICE/browser-watch.service
+
+#Création des chemins pour les fonctionnalitées si configure
+if [ "$1" = "reconfigure" ]; then
+  systemctl stop browser-watch.service
+fi
+#Dans tous les cas
+#Création de la tâche cron
+echo "0 0 * * * root /usr/bin/browser-watch -u $USER -m $EMAIL" > $CRON
+
+#Création du sercice
+printf """
+[Unit]
+Description=Envoie un email sur l'activité des navigateurs au responsable
+
+[Service]
+Type=oneshot
+ExecStop=/usr/bin/browser-watch -u $USER -m $EMAIL
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+
+""" > $SERVICE
+
+if [ ! "$1" = "reconfigure" ];then
+  # création d'unlien symbolique pour le binaire
+  ln -s $BIN /usr/bin/browser-watch
+  # création d'un lien symbolique de la tâche
+  ln -s $CRON /etc/cron.d/browser-watch
+  #Création d'un lien symbolique pour le service
+  ln -s $SERVICE /usr/lib/systemd/system/browser-watch.service
+  # activation du service
+  systemctl enable --now browser-watch.service
+else
+  systemctl daemon-reload
+  systemctl start browser-watch.service
+fi
+
+# Arrêt de debconf
+db_stop
+
+#Vérification de la présence de mailx pour l'envoie du mail
+if [ ! "$( which mailx )" = "" ];then
+  #Vérification de la configuration de mailx
+  if [ ! $( echo "teste de configuration" | mailx -s "teste de configuration" $EMAIL ) = "" ];then
+    printf """
+L'email de teste pour la configuration n'a pas réussi à être envoyé,
+veuiller verifier votre configuration.
+  """
+  else
+  printf """
+Email a été envoyé, verifier si vous l'avez bizn reçu.
+Si vous ne l'avez pas recu, il se peut que votre MTA soit mal configuré.
+  """
+  fi
+else
+  printf """
+ Mailx est non présent sur ce systeme, veuiller l'installer et le configurer.
+  """
+fi
+
+printf """
+  Installation terminée et configurée
+"""
+  exit 0
+
