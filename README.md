@@ -1,4 +1,4 @@
-![Static Badge](https://img.shields.io/badge/Shell-sh-brightgreen?style=plastic&logo=linux)
+![Static Badge](https://img.shields.io/badge/Shell-bash-brightgreen?style=plastic&logo=linux)
 
 # browser-watch
 browser-watch - Créer et envoyer un rapport de l'historique de navigation web par email
@@ -74,9 +74,9 @@ Contactez-moi par e-mail: [nicolasfilippozzi@gmail.com](mailto:nicolasfilippozzi
 ## Historique des versions
 
 * 1.0
-  * Première version de test pre-release
+  * Première version 
 
 ## Licence
 
 Voir le fichier :
-* [LICENSE-MIT](./LICENSE) du dépôt.
+* [LICENSE](./LICENSE) du dépôt.
