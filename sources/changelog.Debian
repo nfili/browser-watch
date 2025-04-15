@@ -3,3 +3,10 @@ browser-watch (1.0) unstable; urgency=medium
   * initial release
 
  -- Nicolas Filippozzi <nicolasfilippozzi@gmail.com>  Mon, 27 Aug 2024 10:44:00 +0200
+
+browser-watch (1.0.1) stable; urgency=medium
+
+  * change the cron job execution time
+  * Improved configuration completion email
+  * minor modification
+ -- Nicolas Filippozzi <nicolasfilippozzi@gmail.com>  Tuesday, 15 April 2025 18:35:00 +0200
