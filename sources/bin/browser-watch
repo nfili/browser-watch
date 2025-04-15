@@ -5,7 +5,7 @@
 #############
 
 # Version du script
-VERSION=1.0
+VERSION=1.0.1
 # Création des fichiers temporaires
 MESSAGE="$(mktemp)"
 # Date du jours pour récuperer les historiques de la journée
