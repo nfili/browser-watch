@@ -23,6 +23,7 @@ Pour installer le programme vous aurez besoin des dépendances suivante
 
 * wget
 * sqlite
+* exim4
 * mailx
 
 Fonctionne avec tous les systèmes GNU/Linux.
@@ -30,9 +31,12 @@ Fonctionne avec tous les systèmes GNU/Linux.
 ## Installation
 
 Pour Debian
+
 ```
-        wget https://github.com/nfili/browser-watch/releases/download/V1.0/browser-watch_1.0_all.deb
-        sudo apt install ./browser-watch_1.0_all.deb
+        wget -O- https://nfili.github.io/ppa/pubkey.gpg | gpg --dearmor | sudo tee /etc/apt/keyrings/nfili-repo.gpg
+        sudo curl -s --compressed -o /etc/apt/sources.list.d/nfili.list "https://nfili.github.io/ppa/nfili.list"
+        sudo apt update
+        sudo apt install browser-watch
 ```
 ## Désinstallation
 
@@ -75,6 +79,9 @@ Contactez-moi par e-mail: [nicolasfilippozzi@gmail.com](mailto:nicolasfilippozzi
 
 * 1.0
   * Première version 
+
+* 1.0.1
+  * Modification de l'heure d'execution de la tâche cron
 
 ## Licence
 
