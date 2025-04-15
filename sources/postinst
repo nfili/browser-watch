@@ -27,7 +27,7 @@ if [ "$1" = "reconfigure" ]; then
 fi
 #Dans tous les cas
 #Création de la tâche cron
-echo "0 0 * * * root /usr/bin/browser-watch -u $USER -m $EMAIL" > $CRON
+echo "23 59 * * * root /usr/bin/browser-watch -u $USER -m $EMAIL" > $CRON
 
 #Création du sercice
 printf """
