@@ -82,6 +82,7 @@ Contactez-moi par e-mail: [nicolasfilippozzi@gmail.com](mailto:nicolasfilippozzi
 
 * 1.0.1
   * Modification de l'heure d'execution de la tâche cron
+  * Modification mineur
 
 ## Licence
 
