@@ -64,7 +64,7 @@ db_stop
 #Vérification de la présence de mailx pour l'envoie du mail
 if [ ! "$( which mailx )" = "" ];then
   #Vérification de la configuration de mailx
-  if [ ! $( echo "teste de configuration" | mailx -s "teste de configuration" $EMAIL ) = "" ];then
+  if [ ! $( echo "teste de configuration pour le script browser-watch" | mailx -s "teste de configuration" $EMAIL ) = "" ];then
     printf """
 L'email de teste pour la configuration n'a pas réussi à être envoyé,
 veuiller verifier votre configuration.
