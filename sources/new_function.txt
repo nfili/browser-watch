@@ -1,0 +1,41 @@
+On veut :
+    1. ajouter une interfce d'administration gui
+    2. configuration de cette interface en local
+    3. configuration de cette interface via https (site web)
+
+1. interface d'administration
+
+    a) en ligne de commande
+
+        On utilisera x dialog pour avoir une interface un minimum conviviale
+
+    b) Via internet
+
+        On utilisera un serveur du type miniserv
+
+    c) fonctionnement
+
+        On récupere les infos de la configuration actuelle pour pouvoir ensuite les modifier.
+        - Ajout/Modification/Effacer utilisateur standard
+        - Modification de l'heure de l'éxécution de la tache cron
+        - Ajout/Suppression de la tâche cron
+        - Activation/desactivation de l'envoie du mail via systemd
+        - Modifier le contenue de l'email, juste le texte pas les rapports des navigateurs
+
+
+2. En local
+
+    on utilisera xdialog pour pouvoir executer la commande en ssh/terminal en ligne de commande
+
+3. Via internet
+
+    On utilisera un serveur web de type miniserv pour ececuter les modifications.
+    Cela permettra ainsi d'ajouter des commandes dans le logiciel de controle parental que je developpe parallélement.
+
+4. Liste des tâche à accomplir
+
+    a) Création d'un script en sh : en cours (nfili)
+    b) Récupération des données de configuration du script de browser-watch : à faire
+    c) Modification du script browser-watch pour surveiller plusieur utilisateur : à faire
+    d) Créer un serveur applicatif web : à faire
+    e) Créer le fichier de manuel : à faire
