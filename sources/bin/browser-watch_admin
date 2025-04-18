@@ -1,1 +1,15 @@
 #!/bin/sh
+
+# User have all rights
+if [ $(id -u) -ne 0 ]; then
+   écho "vous devez lancer cette commande avec les droits root"
+   exit 33
+fi
+
+# Arguments
+# Si aucun argument,  affichage help
+if [[ $# -eq 0 ]]; then
+   help_msg
+   exit 30
+fi
+
