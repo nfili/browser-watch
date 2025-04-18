@@ -5,7 +5,7 @@ browser-watch - Créer et envoyer un rapport de l'historique de navigation web p
 
 Il  permait  de  créer un compte rendu de l'historique des navigateurs pour l'utilisateur sélectionné et de transmettre ce rapport par email aux responsables légaux choisis.
 
-Les rapports sont envoyés à 00:00 tous les jours, et à chaque extinction de l'ordinateur.
+Les rapports sont envoyés à 23:59 tous les jours, et à chaque extinction de l'ordinateur.
 
 ## Table des matières
 
