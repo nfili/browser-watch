@@ -2,14 +2,104 @@
 
 # User have all rights
 if [ $(id -u) -ne 0 ]; then
-   écho "vous devez lancer cette commande avec les droits root"
+   echo "vous devez lancer cette commande avec les droits root"
    exit 33
 fi
 
-# Arguments
+
+#############
+# Variables #
+#############
+
+# Version du script
+VERSION=1.0.1
+
+
+#############################
+# Fonction pour le terminal #
+#############################
+
+# Fonction pour afficher l'utilisation du script
+use(){
+    printf "usage: $0 [-u USER] [-m \"responsable@legal.com,reponsable@legal2.com\"]"
+}
+# Fonction pour afficher l'aide du script
+help_msg(){
+    printf """
+$(use)
+
+Description:
+    Scrip permantant de créér un compte rendu de l'historique des navigateurs pour l'utilisateur
+    sélectionné et de transmettre ce rapport par email aux responsables légaux choisis.
+
+    1. Ce script fait parti du protocole de surveillance de la consommation d'internet par les mineurs.
+    2. La loi française et trés strict quand à l'exposition des mineurs aux contenus web.
+    3. L'utilisation de ce script est réservé aux responsables légaux du mineur sous surveillance.
+
+Paramètres informatif
+    -h, --help          Affiche ce message et quitte
+    -V, --version       Version du script
+
+Paramètres
+    -u, --user          Utilisateur à surveiller
+    -m, --mailto        Destinataire(s) du compte rendu
+
+Navigateur supporté
+    GOOGLE
+    CHROMIUM
+    FIREFOX
+    KONQUEROR           Supporté mais n'est pas sécurisé
+
+"""
+}
+# Afficher la version du script
+version(){
+    printf """
+$0 2024
+Version : $VERSION
+
+"""
+}
+
+trap 'rm -f /tmp/$$_temp' EXIT
+
+dialog --clear \
+    --output-fd 1 \
+    --backtitle "Backtitle" \
+    --title "Title" \
+    --menu "Please select:" 15 30 4 \
+    "1" "Foo" \
+    "2" "Bar" >/tmp/$$_temp
+
+case $(< /tmp/$$_temp) in
+    1) label=yes ;;
+    2) label=no  ;;
+    *) echo >&2 "ERR $choice"; exit 1 ;;
+esac
+dialog --clear \
+    --backtitle "Backtitle" \
+    --title "Confirm" \
+    --yesno "You selected option $label. Do you want to proceed?" 10 40
+
+# Récuperation des arguments
 # Si aucun argument,  affichage help
-if [[ $# -eq 0 ]]; then
+if [ $# -eq 0 ]; then
    help_msg
    exit 30
 fi
 
+while [ $# -ne 0 ]; do
+    key=$1
+    case $key in
+        -h|--help)
+            help_msg
+            exit 0;;
+        -V|--version)
+            version
+            exit 0;;
+        *)
+            echo "$key=>$2"
+            shift
+            shift;;
+    esac
+done
